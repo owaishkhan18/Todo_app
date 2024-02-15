@@ -1,0 +1,211 @@
+<head>
+    <title>
+        todo app
+
+    </title>
+   <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+}
+
+.container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+}
+
+.input-section {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.input-section input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.input-section button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 3px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.todo-item input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.todo-item button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #dc3545;
+  border: none;
+  border-radius: 3px;
+  color: #fff;
+  cursor: pointer;
+}
+  .todoList{
+    /* display: none; */
+    /* padding: px; */
+    /* border: 1px solid red; */
+    height: 200px;
+    margin: auto;
+    width: 60%;
+  }
+  .todoLi{
+    /* margin: 1.2rem; */
+    padding: 10px;
+    margin: 10px auto;
+    width: 60%;
+    /* border: 1px solid red; */
+    border-radius: 8px ;
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    transition: background-color 0.5s ease;
+
+  }
+  .todoLi:hover{
+    background: #8cb6e3;
+  }
+  .todoLi ,li{
+   list-style: none;
+  }
+  button{
+    padding: 3px;
+    width: 15%;
+    background: #dc3545;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+   </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Todo List</h1>
+        <div class="input-section">
+          <input type="text" id="todoInput" placeholder="Enter todo title">
+          <input type="text" id="description" placeholder="Enter descrption">
+          <button onclick="addTodo()">Add</button>
+        </div>
+        
+      </div>
+
+      <div class="todoList">
+         
+      </div>
+
+   
+</body>
+<script>
+    const title=document.querySelector("#todoInput");
+    const description=document.querySelector("#description");
+    const TodoList=document.querySelector(".todoList");
+   
+    // this funtion is used to hide the content .
+
+    function hideTheContent(ok){
+      ok.style.display="none"
+    }
+   function delelteOne(id){
+    fetch("http://localhost:3000/todos/"+id,{
+      method:'DELETE'
+    }).then(response=>{
+              console.log("delete done");
+              document.getElementById(id).style.display="none"
+              // hideTheContent();
+          })
+           }
+
+    // this fucntion to createt he todo if the requeriment 
+    function createTodo(data){
+     const div=document.createElement("div");
+     div.className="todoLi";
+     div.id=data.id;
+     div.innerHTML=`
+          <li>${data.title}</li>
+          <button>Clear</button>`;
+          TodoList.appendChild(div);
+          div.querySelector("button").addEventListener("click",(e)=>{
+            delelteOne(div.id);
+          })
+    }
+    // this function used to fill data into its 
+  function filldata(data){
+  const datas=JSON.parse(data);
+    for(let i=0;i<datas.length;i++){
+      console.log(datas[i])
+      createTodo(datas[i]);
+    }
+  }
+// this function is used to the data is fetch form the server.
+
+  function getData(){
+    fetch("http://localhost:3000/todos",{
+      method:"GET"
+    }).then(response=>{
+      if(!response.ok){
+        throw new Error("network is to not response ");
+      }
+      return response.json();
+    }).then(data=>{
+      filldata(JSON.stringify(data));
+    }).catch(error => {
+    // Handle errors 
+    console.error('There was a problem with the fetch operation:', error);
+  });
+  }
+   getData();
+
+   function addTodo(){
+    fetch('http://localhost:3000/todos',{  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+    // Add any additional headers if needed
+  },
+  body: JSON.stringify({
+    title:title.value,
+    description:description.value
+  })})
+  .then(response => {
+    // Check if the response is successful
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    // Parse the response as JSON
+    return response.json();
+  })
+  .then(data => {
+    // Use the data received from the server
+    createTodo(data);
+    
+  })
+  .catch(error => {
+    // Handle errors 
+    console.error('There was a problem with the fetch operation:', error);
+  });
+
+   }
+</script>
